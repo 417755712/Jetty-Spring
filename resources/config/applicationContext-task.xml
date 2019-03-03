@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	 	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	 	http://www.springframework.org/schema/context
+	 	http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+	
+    <!-- Task -->
+	<bean id="scheduler"
+		class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<!-- 在此添加新的定时运行任务 -->
+			<list>
+				<!-- 归还未接收红包 -->
+				<ref bean="RevertPacketTaskTrigger" />
+				<!-- 红包退款重试 -->
+				<ref bean="RedPacketRetryTaskTrigger" />
+				<!-- 归还未接收平台二维码充值 -->
+				<ref bean="RevertPlatTaskTrigger" />
+				<!-- 一币购/满额抽 乐透开奖 -->
+				<ref bean="RunQuotaLotteryTaskTrigger" />
+				<!-- 一币购/满额抽 乐透定时活动task -->
+				<ref bean="DelayLotteryTaskTrigger" />
+				<!-- 开始问答活动触发器 -->
+				<ref bean="FaqsActionTaskTrigger"/>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- 归还未接收红包 -->
+	<bean id ="RevertTask" class="com.towerchain.warrant.task.RevertTask"/>
+	<bean id="RevertTaskDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">  
+        <property name="targetObject" ref="RevertTask" />  
+        <property name="targetMethod" value="execute" />  
+        <property name="concurrent" value="false" />
+    </bean>  
+	<bean id="RevertPacketTaskTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
+		<property name="jobDetail" ref="RevertTaskDetail"/> 
+		<!-- 每30秒一次 -->
+		<property name="repeatInterval" value="30000"/>
+		<!-- 延时五秒启动 -->
+		<property name="startDelay" value="5000"/>
+	</bean>
+	
+	<!-- 红包退款重试 -->
+	<bean id ="RetryTask" class="com.towerchain.warrant.task.RedPacketRetryTask"/>
+	<bean id="RetryTaskDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">  
+        <property name="targetObject" ref="RetryTask" />  
+        <property name="targetMethod" value="execute" />  
+        <property name="concurrent" value="false" />
+    </bean>  
+	<bean id="RedPacketRetryTaskTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
+		<property name="jobDetail" ref="RetryTaskDetail"/> 
+		<!-- 每60秒一次 -->
+		<property name="repeatInterval" value="60000"/>
+		<!-- 延时十秒启动 -->
+		<property name="startDelay" value="10000"/>
+	</bean>
+	
+	<!-- 归还未接收平台二维码充值 -->
+	<bean id ="RevertPlatTask" class="com.towerchain.warrant.task.RevertPlatTask"/>
+	<bean id="RevertPlatTaskDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">  
+        <property name="targetObject" ref="RevertPlatTask" />  
+        <property name="targetMethod" value="execute" />  
+        <property name="concurrent" value="false" />
+    </bean>  
+	<bean id="RevertPlatTaskTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
+		<property name="jobDetail" ref="RevertPlatTaskDetail"/> 
+		<!-- 每30秒一次 -->
+		<property name="repeatInterval" value="30000"/>
+		<!-- 延时五秒启动 -->
+		<property name="startDelay" value="5000"/>
+	</bean>
+    
+	<!-- 一币购/满额抽 乐透开奖task -->
+    <bean id ="RunQuotaLotteryTask" class="com.towerchain.warrant.task.RunQuotaLotteryTask"/>
+	<bean id="RunQuotaLotteryTaskDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">  
+        <property name="targetObject" ref="RunQuotaLotteryTask" />  
+        <property name="targetMethod" value="execute" />  
+        <property name="concurrent" value="false" />
+    </bean>
+	<bean id="RunQuotaLotteryTaskTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
+		<property name="jobDetail" ref="RunQuotaLotteryTaskDetail"/> 
+		<!-- 每十分钟一次 -->
+		<property name="repeatInterval" value="600000"/>
+		<!-- 延时五秒启动 -->
+		<property name="startDelay" value="5000"/>
+	</bean>
+	
+	<!-- 一币购/满额抽 乐透定时活动task -->
+	<bean id ="DelayLotteryTask" class="com.towerchain.warrant.task.DelayLotteryTask"/>
+	<bean id="DelayLotteryTaskDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">  
+        <property name="targetObject" ref="DelayLotteryTask" />  
+        <property name="targetMethod" value="execute" />  
+        <property name="concurrent" value="false" />
+    </bean>
+    
+	<bean id="DelayLotteryTaskTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="DelayLotteryTaskDetail"/>
+		<property name="cronExpression" value="0 */1 * * * ?" />
+		<property name="startDelay" value="3000"/>
+	</bean>
+	
+	<!-- 开始问答活动触发器 -->
+	<bean id ="FaqsActionTask" class="com.towerchain.warrant.task.FaqsActionTask"/>
+	<bean id="FaqsActionTaskDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">  
+        <property name="targetObject" ref="FaqsActionTask" />  
+        <property name="targetMethod" value="execute" />  
+        <property name="concurrent" value="false" />
+    </bean>
+    
+	<bean id="FaqsActionTaskTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="FaqsActionTaskDetail"/>
+		<property name="cronExpression" value="0 */1 * * * ?" />
+		<property name="startDelay" value="3000"/>
+	</bean>
+</beans>
